@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Robot Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg1: #0b1220;
+      --bg2: #0a0f1a;
+      --card: rgba(255, 255, 255, 0.08);
+      --card2: rgba(255, 255, 255, 0.06);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.65);
+      --muted2: rgba(255, 255, 255, 0.45);
+
+      --blue: #4aa3ff;
+      --green: #34d399;
+      --orange: #fbbf24;
+      --red: #fb7185;
+
+      --radius: 22px;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Display", "SF Pro Text", Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(74, 163, 255, 0.20), transparent 50%),
+        radial-gradient(900px 600px at 85% 30%, rgba(52, 211, 153, 0.16), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: -20%;
+      background:
+        radial-gradient(500px 500px at 15% 15%, rgba(74, 163, 255, 0.22), transparent 65%),
+        radial-gradient(650px 650px at 80% 20%, rgba(251, 191, 36, 0.14), transparent 60%),
+        radial-gradient(600px 600px at 70% 80%, rgba(251, 113, 133, 0.12), transparent 60%);
+      filter: blur(30px);
+      z-index: -1;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(10, 14, 22, 0.55);
+      backdrop-filter: blur(14px);
+    }
+
+    .titleWrap { display: flex; align-items: center; gap: 12px; }
+
+    .appIcon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+    }
+
+    .title { font-weight: 700; letter-spacing: 0.2px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.07);
+    }
+
+    .dot.good {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+      animation: pulseGreen 2s infinite;
+    }
+
+    .dot.bad {
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.15);
+      animation: pulseRed 2s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15); }
+      50% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.3); }
+    }
+
+    @keyframes pulseRed {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.15); }
+      50% { box-shadow: 0 0 0 8px rgba(251, 113, 133, 0.3); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 18px auto 0;
+      padding: 0 16px 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.06));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .cardHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h2 { margin: 0; font-size: 24px; letter-spacing: 0.2px; }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+
+    .stat {
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      transition: all 0.3s ease;
+    }
+
+    .stat.warning {
+      background: rgba(251, 191, 36, 0.15);
+      border: 2px solid rgba(251, 191, 36, 0.4);
+      animation: warningPulse 2s infinite;
+    }
+
+    .stat.critical {
+      background: rgba(251, 113, 133, 0.2);
+      border: 2px solid rgba(251, 113, 133, 0.5);
+      animation: criticalPulse 1s infinite;
+    }
+
+    @keyframes warningPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+      50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(251, 191, 36, 0.6); }
+    }
+
+    @keyframes criticalPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.5); }
+      50% { transform: scale(1.03); box-shadow: 0 0 20px rgba(251, 113, 133, 0.8); }
+    }
+
+    .label { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+    .value { font-size: 22px; font-weight: 700; letter-spacing: 0.2px; }
+    .unit { color: var(--muted); font-weight: 600; margin-left: 4px; }
+
+    .messageBox {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.20);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+
+    .messageTitle { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .messageText { font-size: 14px; line-height: 1.35; }
+
+    .alert {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(251, 191, 36, 0.14);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      color: rgba(255, 255, 255, 0.92);
+      animation: slideIn 0.4s ease;
+    }
+
+    .alert.critical {
+      background: rgba(251, 113, 133, 0.2);
+      border: 2px solid rgba(251, 113, 133, 0.4);
+      animation: criticalAlert 1s infinite;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes criticalAlert {
+      0%, 100% { border-color: rgba(251, 113, 133, 0.4); box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.4); }
+      50% { border-color: rgba(251, 113, 133, 0.8); box-shadow: 0 0 20px rgba(251, 113, 133, 0.6); }
+    }
+
+    .alertIcon { font-size: 18px; margin-top: 1px; }
+    .alertTitle { font-weight: 800; margin-bottom: 4px; }
+    .alertText { color: rgba(255, 255, 255, 0.75); margin-top: 2px; font-size: 13px; }
+
+    .hidden { display: none !important; }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modalContent {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+      border: 2px solid rgba(251, 191, 36, 0.4);
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modalHeader { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .modalIcon { font-size: 36px; }
+    .modalHeader h3 { margin: 0; color: var(--orange); font-size: 22px; font-weight: 800; }
+
+    .modalBody { margin-bottom: 25px; }
+    .modalBody p { margin: 12px 0; color: var(--text); font-size: 15px; }
+    .modalBody strong { color: var(--orange); }
+
+    .modalWarning {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .modalBtn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--orange), rgba(251, 191, 36, 0.8));
+      color: var(--bg1);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modalBtn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4); }
+    .modalBtn:active { transform: translateY(0); }
+
+    .footer {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 10px 16px 24px;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+
+    code { color: rgba(184, 199, 255, 0.95); }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="titleWrap">
+      <div class="appIcon">🤖</div>
+      <div>
+        <div class="title">Airport Luggage Carrying Robot's</div>
+        <div class="subtitle">Realtime Dashboard</div>
+      </div>
+    </div>
+
+    <div class="pill" id="connectionPill">
+      <span class="dot" id="connDot"></span>
+      <span id="connectionText">CONNECTING</span>
+    </div>
+  </header>
+
+  <center><h1>ROBOT DASHBOARD</h1></center>
+
+  <main class="container">
+    <section class="card">
+      <div class="cardHeader">
+        <h2>Status</h2>
+        <span class="chip" id="modeChip">--</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Current</div>
+          <div class="value" id="currentLocation">--</div>
+        </div>
+        <div class="stat">
+          <div class="label">Destination</div>
+          <div class="value" id="destination">--</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">RFID</div>
+          <div class="value" id="rfidStatus">--</div>
+        </div>
+
+        <div class="stat" id="weightStat">
+          <div class="label">Weight</div>
+          <div class="value">
+            <span id="weightKg">--</span><span class="unit"> kg</span>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Updated</div>
+          <div class="value" id="updatedAt">--</div>
+        </div>
+      </div> 
+
+      <div class="messageBox" id="statusBox">
+        <div class="messageTitle">Robot Message</div>
+        <div class="messageText" id="statusText">--</div>
+      </div>
+
+      <div class="alert hidden" id="warning">
+        <div class="alertIcon">⚠️</div>
+        <div>
+          <div class="alertTitle">⚖️ Overweight Warning!</div>
+          <div class="alertText" id="warningText">
+            Maximum weight limit is 1.0 kg. Please reduce the weight immediately.
+          </div>
+        </div>
+      </div>
+
+      <div class="alert critical hidden" id="criticalWarning">
+        <div class="alertIcon">🚨</div>
+        <div>
+          <div class="alertTitle">🛑 CRITICAL OVERLOAD!</div>
+          <div class="alertText" id="criticalText">
+            Weight exceeds safe limits! Robot may stop. Remove items now!
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span><b>Project By •</b> <code>Afrar</code><b>,</b> <code>Nasrullah</code> <b>&</b> <code>Aflal</code></span>
+  </footer>
+
+  <div class="modal hidden" id="weightModal">
+    <div class="modalContent">
+      <div class="modalHeader">
+        <span class="modalIcon">⚖️</span>
+        <h3>Weight Limit Exceeded</h3>
+      </div>
+      <div class="modalBody">
+        <p><strong>Maximum Weight:</strong> 0.8 kg</p>
+        <p><strong>Current Weight:</strong> <span id="modalWeight">--</span> kg</p>
+        <p><strong>Excess Weight:</strong> <span id="excessWeight">--</span> kg</p>
+        <div class="modalWarning">
+          ⚠️ Please reduce the weight immediately to continue operation safely.
+        </div>
+      </div>
+      <button class="modalBtn" onclick="closeWeightModal()">I Understand</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkonyVHadfNtcJVC7QeA71WARnShT9YcU",
+      authDomain: "luggage-robot-dashboard.firebaseapp.com",
+      databaseURL: "https://luggage-robot-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "luggage-robot-dashboard",
+      storageBucket: "luggage-robot-dashboard.firebasestorage.app",
+      messagingSenderId: "673423680164",
+      appId: "1:673423680164:web:5d2f99c2102f82cb433c31",
+      measurementId: "G-2T3VD4P71K",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Weight limits (kg)
+    const MAX_WEIGHT = 0.8;
+    const CRITICAL_WEIGHT = 1.5;
+
+    const el = (id) => document.getElementById(id);
+    const stateRef = ref(db, "robot/state");
+
+    // UI elements
+    const connDot = el("connDot");
+    const connectionText = el("connectionText");
+    const modeChip = el("modeChip");
+    const weightStat = el("weightStat");
+
+    // Sound notification
+    function playWarningSound() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Show weight modal
+    function showWeightModal(weightKg) {
+      const modal = el("weightModal");
+      const excess = (weightKg - MAX_WEIGHT).toFixed(2);
+
+      el("modalWeight").textContent = weightKg.toFixed(2);
+      el("excessWeight").textContent = excess;
+
+      modal.classList.remove("hidden");
+      playWarningSound();
+    }
+
+    // Close weight modal
+    window.closeWeightModal = function () {
+      el("weightModal").classList.add("hidden");
+    };
+
+    function setConnected(isConnected) {
+      if (isConnected) {
+        connectionText.textContent = "CONNECTED";
+        connDot.classList.add("good");
+        connDot.classList.remove("bad");
+      } else {
+        connectionText.textContent = "DISCONNECTED";
+        connDot.classList.add("bad");
+        connDot.classList.remove("good");
+      }
+    }
+
+    // supports epoch ms, ISO string, or counter/uptime
+    function formatUpdatedAt(ts) {
+      // Always show real date & time when data was received
+      return new Date().toLocaleString();
+    }
+
+    // Track if modal has been shown
+    let modalShown = false;
+
+    // LIVE/STALE detection
+    let firstSnapshot = true;
+    let lastSeenUpdatedAt = null;
+
+    // RFID change detector
+    let lastRfid = null;
+
+    // Helper: parse weight and normalize to kg
+    // ✅ FIX: if Firebase sends grams (like 800), convert to kg (0.8)
+    function parseWeightToKg(raw) {
+      if (raw === undefined || raw === null || raw === "") return null;
+      const n = typeof raw === "number" ? raw : Number(raw);
+      if (Number.isNaN(n)) return null;
+
+      // If value looks like grams (>= 10), treat as grams and convert to kg
+      // e.g. 800 => 0.8 kg, 1200 => 1.2 kg
+      if (n >= 10) return n / 1000;
+
+      // Otherwise assume it's already in kg (e.g. 0.8)
+      return n;
+    }
+
+    onValue(
+      stateRef,
+      (snap) => {
+        setConnected(true);
+        const s = snap.val() || {};
+
+        const mode = s.mode || "--";
+        const currentLocation = s.currentLocation || "--";
+        const destination = s.destination || "--";
+        const rfidStatus = s.rfidStatus || "--";
+
+        // ✅ FIXED parsing
+        const weight = parseWeightToKg(s.weightKg);
+
+        // Show values immediately
+        el("currentLocation").textContent = currentLocation;
+        el("destination").textContent = destination;
+        el("statusText").textContent = s.statusText || "--";
+        el("updatedAt").textContent = formatUpdatedAt(s.updatedAt);
+        modeChip.textContent = mode;
+
+        // LIVE / LAST SAVED DATA indicator
+        if (firstSnapshot) {
+          firstSnapshot = false;
+          lastSeenUpdatedAt = s.updatedAt ?? null;
+          connectionText.textContent = "CONNECTED (LAST SAVED DATA)";
+          connDot.classList.add("good");
+          connDot.classList.remove("bad");
+        } else {
+          const nowUpdatedAt = s.updatedAt ?? null;
+          if (nowUpdatedAt !== null && nowUpdatedAt !== lastSeenUpdatedAt) {
+            connectionText.textContent = "CONNECTED (LIVE)";
+            lastSeenUpdatedAt = nowUpdatedAt;
+          } else {
+            connectionText.textContent = "CONNECTED (LAST SAVED DATA)";
+          }
+          connDot.classList.add("good");
+          connDot.classList.remove("bad");
+        }
+
+        // RFID display + tiny flash when it changes
+        el("rfidStatus").textContent = rfidStatus;
+        if (lastRfid !== null && rfidStatus !== lastRfid) {
+          const box = el("rfidStatus").closest(".stat");
+          if (box) {
+            box.style.transform = "scale(1.03)";
+            setTimeout(() => (box.style.transform = ""), 200);
+          }
+        }
+        lastRfid = rfidStatus;
+
+        // Weight display and warning logic
+        if (weight === null) {
+          el("weightKg").textContent = "--";
+          weightStat.classList.remove("warning", "critical");
+          el("warning").classList.add("hidden");
+          el("criticalWarning").classList.add("hidden");
+          modalShown = false;
+        } else {
+          el("weightKg").textContent = weight.toFixed(2);
+
+          weightStat.classList.remove("warning", "critical");
+
+          // Critical overweight
+          if (weight > CRITICAL_WEIGHT) {
+            weightStat.classList.add("critical");
+            el("warning").classList.add("hidden");
+            el("criticalWarning").classList.remove("hidden");
+
+            el("criticalText").textContent = `CRITICAL! Weight is ${weight.toFixed(
+              2
+            )} kg. Maximum is ${MAX_WEIGHT.toFixed(1)} kg. Remove ${(weight - MAX_WEIGHT).toFixed(
+              2
+            )} kg immediately!`;
+
+            if (!modalShown) {
+              showWeightModal(weight);
+              modalShown = true;
+            }
+          }
+          // Warning overweight
+          else if (weight > MAX_WEIGHT) {
+            weightStat.classList.add("warning");
+            el("criticalWarning").classList.add("hidden");
+            el("warning").classList.remove("hidden");
+
+            el("warningText").textContent = `Maximum weight is ${MAX_WEIGHT.toFixed(
+              1
+            )} kg. Current weight is ${weight.toFixed(2)} kg. Please reduce by ${(
+              weight - MAX_WEIGHT
+            ).toFixed(2)} kg.`;
+
+            if (!modalShown) {
+              showWeightModal(weight);
+              modalShown = true;
+            }
+          }
+          // Normal
+          else {
+            el("warning").classList.add("hidden");
+            el("criticalWarning").classList.add("hidden");
+            modalShown = false;
+          }
+        }
+      },
+      () => setConnected(false)
+    );
+  </script>
+</body>
+</html>
